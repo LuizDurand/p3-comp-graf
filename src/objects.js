@@ -51,6 +51,26 @@ class Box
     }
 }
 
+// Nova primitiva. A ordem dos campos é a ordem em que vão para o buffer (struct cylinder no WGSL).
+class Cylinder
+{
+    name = "Cylinder";
+    center = [0.0, 0.0, 0.0, 0.0];
+    size = [0.0, 0.0, 0.0, 0.0]; // x = raio, y = meia altura
+    rotation = [0.0, 0.0, 0.0, 0.0];
+    color = [0.0, 0.0, 0.0, 0.0];
+    material = [0.0, 0.0, 0.0, 0.0];
+
+    constructor(center, color, rotation, radius, halfHeight, material)
+    {
+        this.center = [center[0], center[1], center[2], 0.0];
+        this.size = [radius, halfHeight, 0.0, 0.0];
+        this.rotation = [rotation[0], rotation[1], rotation[2], 0.0];
+        this.color = [color[0], color[1], color[2], 1.0];
+        this.material = material;
+    }
+}
+
 class Triangle
 {
     name = "Triangle";
@@ -99,4 +119,4 @@ class Mesh
     }
 }
 
-export { Sphere, Quad, Box, Triangle, Mesh };
+export { Sphere, Quad, Box, Cylinder, Triangle, Mesh };

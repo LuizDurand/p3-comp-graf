@@ -1,4 +1,4 @@
-import { Sphere, Quad, Box, Mesh } from './objects.js';
+import { Sphere, Quad, Box, Cylinder, Mesh } from './objects.js';
 import { loadMesh, getObjBoundingBox, getSpheresRandom } from './util.js';
 
 const groundDefault = new Sphere([0, -1001, 0], [0.7, 0.7, 0.7], 1000, [0.9, 0.0, 0.6, 0.0]);
@@ -503,6 +503,94 @@ async function Everything()
         sunIntensity: 1.0,
         samplesPerPixel: 1.0,
         maxBounces: 10.0
+    };
+}
+
+// ---------------------------------------------------------------------------
+// Cenas novas. Obs.: o menu de cenas lista toda declaração de função deste arquivo
+// (regex em util.js), então não crie funções auxiliares aqui: elas virariam cenas.
+// Cylinder(centro, cor, rotação euler [rad], raio, meia altura, material)
+// material = [smoothness, absorption, specular, light]
+// ---------------------------------------------------------------------------
+
+// Nova primitiva: cilindros com todos os tipos de material e rotações
+async function Cylinders()
+{
+    let cylinders = [
+        new Cylinder([-1.5, -0.45, -3.2], [0.85, 0.15, 0.1], [0, 0, 0], 0.45, 0.55, [0, 0, 0, 0]),          // difuso
+        new Cylinder([-0.95, -0.55, -2.2], [1, 1, 1], [0, 0, 0], 0.3, 0.45, [-1, 0, 1.5, 0]),              // vidro (n = 1.5) na frente do vermelho
+        new Cylinder([0.55, -0.35, -3.4], [1, 0.78, 0.34], [0, 0, 0.5], 0.3, 0.6, [1, 0.1, 1, 0]),         // ouro com fuzz, inclinado
+        new Cylinder([1.6, -0.25, -3.0], [0.9, 0.9, 0.95], [1.5708, 1.05, 0], 0.75, 0.05, [1, 0, 1, 0]),   // moeda espelhada em pé
+        new Cylinder([0.1, -0.92, -2.0], [0.2, 0.9, 1], [0, 0, 1.5708], 0.06, 0.7, [0, 0, 0, 4]),          // tubo de neon deitado
+        new Cylinder([-0.6, 0.55, -4.0], [0.2, 0.8, 0.3], [0.6, 0.3, 0.9], 0.25, 0.6, [0.8, 0, 0.4, 0]),   // plástico brilhante flutuando
+    ];
+
+    return {
+        spheres: [groundDefault],
+        quads: [],
+        boxes: [],
+        cylinders,
+        triangles: [],
+        meshes: [],
+        backgroundColor1: [0.0, 0.5, 1.0],
+        backgroundColor2: [1.0, 1.0, 1.0],
+        focusDistance: 3.2,
+        focusAngle: 0.0,
+        sunIntensity: 1.0,
+        samplesPerPixel: 1.0,
+        maxBounces: 10.0
+    };
+}
+
+// Cena nova: templo ao pôr do sol com colunas (cilindros), estátua de ouro (Suzanne),
+// vidro, espelho e lanternas emissivas
+async function Temple()
+{
+    let marble = [0.92, 0.9, 0.85];
+    let spheres = [
+        new Sphere([0, -1001, 0], [0.75, 0.7, 0.62], 1000, [0.6, 0, 0.3, 0]),           // chão de mármore polido
+        new Sphere([-0.55, -0.72, -2.0], [1, 1, 1], 0.28, [-1, 0, 1.5, 0]),             // esfera de vidro
+        new Sphere([0.5, -0.8, -2.2], [0.8, 0.85, 0.9], 0.2, [1, 0, 1, 0]),             // esfera espelhada
+        new Sphere([-0.75, -0.2, -2.6], [1, 0.55, 0.2], 0.1, [0, 0, 0, 4]),             // lanterna
+        new Sphere([0.75, -0.2, -2.6], [1, 0.55, 0.2], 0.1, [0, 0, 0, 4]),              // lanterna
+    ];
+
+    let cylinders = [];
+    let boxes = [new Box([0, -0.75, -3.6], marble, [0, 0, 0], [0.35, 0.25, 0.35], [0.3, 0, 0.1, 0])]; // pedestal
+
+    // duas fileiras de colunas, cada uma com capitel e uma viga (arquitrave) por cima
+    for (let x of [-1.5, 1.5])
+    {
+        for (let z of [-2.2, -3.6, -5.0])
+        {
+            cylinders.push(new Cylinder([x, -0.1, z], marble, [0, 0, 0], 0.18, 0.9, [0.3, 0, 0.1, 0]));
+            boxes.push(new Box([x, 0.85, z], marble, [0, 0, 0], [0.26, 0.05, 0.26], [0.3, 0, 0.1, 0]));
+        }
+
+        boxes.push(new Box([x, 0.98, -3.6], marble, [0, 0, 0], [0.3, 0.08, 1.75], [0.3, 0, 0.1, 0]));
+    }
+
+    cylinders.push(new Cylinder([0.95, -0.82, -1.7], marble, [0, 0.6, 1.5708], 0.18, 0.5, [0.3, 0, 0.1, 0])); // coluna caída
+
+    let { verticesMesh, triangles } = await loadMesh('./media/suzanne.obj');
+    let meshes = [new Mesh([0, -0.18, -3.6], [0.32, 0.32, 0.32], [0, 0, 0], [1, 0.75, 0.3], [1, 0.05, 1, 0], 0, 0, triangles.length)]; // estátua de ouro
+    let { min, max } = getObjBoundingBox(verticesMesh);
+    meshes[0].setBoundingBox(min, max);
+
+    return {
+        spheres,
+        quads: [],
+        boxes,
+        cylinders,
+        triangles,
+        meshes,
+        backgroundColor1: [1.0, 0.5, 0.25],
+        backgroundColor2: [0.2, 0.15, 0.45],
+        focusDistance: 3.6,
+        focusAngle: 0.04,
+        sunIntensity: 1.0,
+        samplesPerPixel: 1.0,
+        maxBounces: 8.0
     };
 }
 

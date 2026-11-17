@@ -84,14 +84,17 @@ async function getModule(gpu, paths)
     var module = gpu.createShaderModule({ code });
     var info = await module.getCompilationInfo();
 
-    if (info.messages.length > 0)
+    // os arquivos são concatenados, então lineNum é a linha no código concatenado
+    // (o template usava uma variável "file" inexistente, o que escondia a mensagem real)
+    const lines = code.split("\n");
+    for (let message of info.messages)
     {
-        for (let message of info.messages)
-        {
-            console.warn(`${message.message} at ${file} line ${message.lineNum}`);
-        }
+        console.warn(`[${message.type}] ${message.message} at line ${message.lineNum}: ${lines[message.lineNum - 1]?.trim()}`);
+    }
 
-        throw new Error(`Could not compile ${file}`);
+    if (info.messages.some(message => message.type === "error"))
+    {
+        throw new Error(`Could not compile ${paths.join(", ")}`);
     }
 
     return module;
