@@ -5,7 +5,7 @@ Todas as cenas do template foram implementadas e comparadas com o
 [gabarito](https://gubebra.itch.io/raytracing). Além delas, há uma **primitiva nova (cilindro)** e
 **duas cenas novas** (`Cylinders` e `Temple`).
 
-Aluno(s): _preencher_
+Aluno(s): Luiz Durand e Luka Figueiredo
 
 ### Como rodar
 
